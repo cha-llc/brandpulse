@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrandPulse — Your Brand's Truth in 60 Seconds</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --gold: #c9a84c;
+    --gold-light: #e8d48a;
+    --red: #c0392b;
+    --green: #1a6b4a;
+    --muted: #6b6458;
+    --border: #d4cdbf;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Decorative diagonal line */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -10%;
+    right: 8%;
+    width: 1px;
+    height: 120%;
+    background: linear-gradient(to bottom, transparent, var(--gold) 20%, var(--gold) 80%, transparent);
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .logo span {
+    color: var(--gold);
+  }
+
+  .logo-tag {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 64px 0 48px;
+  }
+
+  .hero-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-label::before {
+    content: '●';
+    font-size: 0.5rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 6vw, 4.2rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 520px;
+    margin-bottom: 36px;
+  }
+
+  .price-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    margin-bottom: 48px;
+  }
+
+  .price-tag strong {
+    font-size: 1.4rem;
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+  }
+
+  /* DIMENSIONS PREVIEW */
+  .dimensions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 64px;
+    border: 1px solid var(--border);
+  }
+
+  .dim {
+    background: var(--paper);
+    padding: 20px 18px;
+  }
+
+  .dim-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .dim-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* FORM */
+  .form-section {
+    padding: 48px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .form-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .form-sub {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 40px;
+  }
+
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .question-block {
+    display: none;
+    animation: fadeSlide 0.4s ease;
+  }
+
+  .question-block.active {
+    display: block;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+
+  .q-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    line-height: 1.3;
+  }
+
+  .options {
+    display: grid;
+    gap: 10px;
+  }
+
+  .option {
+    border: 1px solid var(--border);
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    text-align: left;
+    color: var(--ink);
+  }
+
+  .option:hover {
+    border-color: var(--gold);
+    background: rgba(201, 168, 76, 0.05);
+  }
+
+  .option.selected {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .option-letter {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    width: 22px;
+    height: 22px;
+    border: 1px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  .input-field {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    background: transparent;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+  }
+
+  .input-field:focus {
+    border-color: var(--ink);
+  }
+
+  .input-field::placeholder {
+    color: var(--muted);
+  }
+
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 32px;
+  }
+
+  .btn-back {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 12px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .btn-back:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .btn-next {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 14px 32px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+
+  .btn-next:hover {
+    background: var(--gold);
+    color: var(--ink);
+  }
+
+  .btn-next:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  /* PAYMENT STEP */
+  .payment-block {
+    border: 1px solid var(--border);
+    padding: 36px;
+    margin-top: 16px;
+  }
+
+  .payment-summary {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+  }
+
+  .payment-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: var(--muted);
+  }
+
+  .payment-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .payment-total span:last-child {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+  }
+
+  .stripe-btn {
+    width: 100%;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .stripe-btn:hover {
+    background: var(--gold);
+    color: var(--ink);
+  }
+
+  .secure-note {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 12px;
+    letter-spacing: 0.1em;
+  }
+
+  /* RESULTS */
+  .results-section {
+    display: none;
+    padding: 48px 0;
+    animation: fadeSlide 0.6s ease;
+  }
+
+  .results-section.visible {
+    display: block;
+  }
+
+  .results-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 40px;
+  }
+
+  .score-hero {
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    margin: 24px 0;
+  }
+
+  .score-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 6rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .score-number span {
+    font-size: 2rem;
+    color: var(--muted);
+  }
+
+  .score-label {
+    padding-bottom: 12px;
+  }
+
+  .score-label-main {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .score-label-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .dimension-scores {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .dim-score {
+    display: grid;
+    grid-template-columns: 160px 1fr 40px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .dim-score-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .dim-score-bar {
+    height: 4px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dim-score-fill {
+    height: 100%;
+    background: var(--gold);
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 1s ease 0.3s;
+  }
+
+  .dim-score-fill.animate {
+    transform: scaleX(1);
+  }
+
+  .dim-score-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    text-align: right;
+    color: var(--ink);
+  }
+
+  .recommendations {
+    border-top: 1px solid var(--border);
+    padding-top: 40px;
+  }
+
+  .rec-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+
+  .rec-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .rec-item:last-child {
+    border-bottom: none;
+  }
+
+  .rec-priority {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    height: fit-content;
+    margin-top: 4px;
+  }
+
+  .rec-priority.high {
+    background: var(--red);
+    color: white;
+  }
+
+  .rec-priority.medium {
+    background: var(--gold);
+    color: var(--ink);
+  }
+
+  .rec-priority.low {
+    background: var(--green);
+    color: white;
+  }
+
+  .rec-content h4 {
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+  }
+
+  .rec-content p {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .download-cta {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 48px;
+    margin-top: 48px;
+    text-align: center;
+  }
+
+  .download-cta h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .download-cta p {
+    font-size: 0.9rem;
+    color: rgba(245,240,232,0.6);
+    margin-bottom: 28px;
+  }
+
+  .btn-download {
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    padding: 16px 36px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+
+  .btn-download:hover {
+    background: var(--gold-light);
+  }
+
+  /* EMAIL CAPTURE */
+  .email-capture {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0;
+    margin-bottom: 16px;
+  }
+
+  .email-capture input {
+    border: 1px solid rgba(245,240,232,0.2);
+    background: rgba(245,240,232,0.08);
+    color: var(--paper);
+    padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    border-right: none;
+  }
+
+  .email-capture input::placeholder {
+    color: rgba(245,240,232,0.4);
+  }
+
+  .email-capture button {
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    padding: 14px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  .email-capture button:hover {
+    background: var(--gold-light);
+  }
+
+  footer {
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+
+  .loading-overlay.visible {
+    display: flex;
+  }
+
+  .loading-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .loading-steps {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-align: center;
+    min-height: 40px;
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* HIDDEN */
+  .form-section.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">Brand<span>Pulse</span></div>
+    <div class="logo-tag">Brand Intelligence Engine</div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="heroSection">
+    <div class="hero-label">AI Brand Assessment</div>
+    <h1>Does your brand<br><em>actually work?</em></h1>
+    <p class="hero-sub">Answer 15 questions. Receive a forensic analysis of your brand across 6 dimensions — with a personalized PDF scorecard and exact fixes. In 60 seconds.</p>
+    <div class="price-tag">
+      Full brand audit <strong>$47</strong> — instant delivery
+    </div>
+
+    <div class="dimensions">
+      <div class="dim"><div class="dim-num">6</div><div class="dim-label">Dimensions Scored</div></div>
+      <div class="dim"><div class="dim-num">15</div><div class="dim-label">Questions</div></div>
+      <div class="dim"><div class="dim-num">12</div><div class="dim-label">Page Report</div></div>
+      <div class="dim"><div class="dim-num">60s</div><div class="dim-label">Delivery Time</div></div>
+      <div class="dim"><div class="dim-num">100%</div><div class="dim-label">Automated</div></div>
+      <div class="dim"><div class="dim-num">$47</div><div class="dim-label">One-Time</div></div>
+    </div>
+
+    <button class="btn-next" onclick="startAudit()">Start My Brand Audit →</button>
+  </section>
+
+  <!-- FORM -->
+  <section class="form-section hidden" id="formSection">
+    <h2 class="form-heading">The Audit</h2>
+    <p class="form-sub">No wrong answers. Be honest — the more accurate you are, the more precise your report.</p>
+
+    <div class="progress-label" id="progressLabel">Question 1 of 15</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <!-- Q1 -->
+    <div class="question-block active" id="q1">
+      <div class="q-number">01 / CLARITY</div>
+      <div class="q-text">If a stranger visited your website for 5 seconds, could they immediately tell what you do and who it's for?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 1, 4)"><span class="option-letter">A</span>Yes — it's crystal clear within seconds</button>
+        <button class="option" onclick="selectOption(this, 1, 3)"><span class="option-letter">B</span>Probably, but I'm not 100% sure</button>
+        <button class="option" onclick="selectOption(this, 1, 2)"><span class="option-letter">C</span>It takes a bit of scrolling to understand</button>
+        <button class="option" onclick="selectOption(this, 1, 1)"><span class="option-letter">D</span>Honestly, no — it's confusing</button>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-block" id="q2">
+      <div class="q-number">02 / CLARITY</div>
+      <div class="q-text">Can you say what makes you different from your top 3 competitors in one sentence?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 2, 4)"><span class="option-letter">A</span>Yes — our differentiator is sharp and specific</button>
+        <button class="option" onclick="selectOption(this, 2, 3)"><span class="option-letter">B</span>Sort of — it's more about quality than a real differentiator</button>
+        <button class="option" onclick="selectOption(this, 2, 2)"><span class="option-letter">C</span>I'd struggle to say it clearly</button>
+        <button class="option" onclick="selectOption(this, 2, 1)"><span class="option-letter">D</span>We don't really have a clear differentiator</button>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-block" id="q3">
+      <div class="q-number">03 / TRUST</div>
+      <div class="q-text">What social proof does your brand have publicly visible?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 3, 4)"><span class="option-letter">A</span>Testimonials, case studies, press mentions, and reviews</button>
+        <button class="option" onclick="selectOption(this, 3, 3)"><span class="option-letter">B</span>Some testimonials or reviews</button>
+        <button class="option" onclick="selectOption(this, 3, 2)"><span class="option-letter">C</span>Very little — maybe one or two things</button>
+        <button class="option" onclick="selectOption(this, 3, 1)"><span class="option-letter">D</span>None visible on our primary channels</button>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-block" id="q4">
+      <div class="q-number">04 / TRUST</div>
+      <div class="q-text">How consistent are your visual identity and messaging across all channels?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 4, 4)"><span class="option-letter">A</span>Completely consistent — same look, feel, and voice everywhere</button>
+        <button class="option" onclick="selectOption(this, 4, 3)"><span class="option-letter">B</span>Mostly consistent with minor variations</button>
+        <button class="option" onclick="selectOption(this, 4, 2)"><span class="option-letter">C</span>Inconsistent — we've evolved but haven't updated everything</button>
+        <button class="option" onclick="selectOption(this, 4, 1)"><span class="option-letter">D</span>Very inconsistent — different looks everywhere</button>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question-block" id="q5">
+      <div class="q-number">05 / EMOTION</div>
+      <div class="q-text">What does your brand make people feel when they first encounter it?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 5, 4)"><span class="option-letter">A</span>A specific, intentional feeling we've designed for</button>
+        <button class="option" onclick="selectOption(this, 5, 3)"><span class="option-letter">B</span>Generally positive but not a specific designed feeling</button>
+        <button class="option" onclick="selectOption(this, 5, 2)"><span class="option-letter">C</span>I'm not sure — we haven't thought much about it</button>
+        <button class="option" onclick="selectOption(this, 5, 1)"><span class="option-letter">D</span>Probably nothing memorable</button>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question-block" id="q6">
+      <div class="q-number">06 / EMOTION</div>
+      <div class="q-text">Do customers come back unprompted or refer others without being asked?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 6, 4)"><span class="option-letter">A</span>Yes — referrals and repeat business are a major source of revenue</button>
+        <button class="option" onclick="selectOption(this, 6, 3)"><span class="option-letter">B</span>Sometimes — it happens but isn't consistent</button>
+        <button class="option" onclick="selectOption(this, 6, 2)"><span class="option-letter">C</span>Rarely — most customers need to be re-targeted</button>
+        <button class="option" onclick="selectOption(this, 6, 1)"><span class="option-letter">D</span>Almost never happens organically</button>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question-block" id="q7">
+      <div class="q-number">07 / POSITIONING</div>
+      <div class="q-text">Where do you sit in the market relative to price?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 7, 4)"><span class="option-letter">A</span>Premium — and our brand fully justifies it</button>
+        <button class="option" onclick="selectOption(this, 7, 3)"><span class="option-letter">B</span>Mid-market — intentionally accessible</button>
+        <button class="option" onclick="selectOption(this, 7, 2)"><span class="option-letter">C</span>Budget — competing on price (by necessity)</button>
+        <button class="option" onclick="selectOption(this, 7, 1)"><span class="option-letter">D</span>Our pricing feels random and hard to defend</button>
+      </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="question-block" id="q8">
+      <div class="q-number">08 / POSITIONING</div>
+      <div class="q-text">How would you describe your target customer?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 8, 4)"><span class="option-letter">A</span>Hyper-specific — we know exactly who they are and what drives them</button>
+        <button class="option" onclick="selectOption(this, 8, 3)"><span class="option-letter">B</span>Fairly defined — we have a general profile</button>
+        <button class="option" onclick="selectOption(this, 8, 2)"><span class="option-letter">C</span>Broad — we try to appeal to many types of people</button>
+        <button class="option" onclick="selectOption(this, 8, 1)"><span class="option-letter">D</span>Undefined — our customer could be almost anyone</button>
+      </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="question-block" id="q9">
+      <div class="q-number">09 / VISIBILITY</div>
+      <div class="q-text">Can new customers find you organically without paid ads?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 9, 4)"><span class="option-letter">A</span>Yes — strong SEO, content presence, or word-of-mouth</button>
+        <button class="option" onclick="selectOption(this, 9, 3)"><span class="option-letter">B</span>Some — we rank for a few relevant terms</button>
+        <button class="option" onclick="selectOption(this, 9, 2)"><span class="option-letter">C</span>Barely — we depend heavily on paid or direct outreach</button>
+        <button class="option" onclick="selectOption(this, 9, 1)"><span class="option-letter">D</span>No — invisible without spending money</button>
+      </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="question-block" id="q10">
+      <div class="q-number">10 / VISIBILITY</div>
+      <div class="q-text">How active and consistent is your brand's content presence?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 10, 4)"><span class="option-letter">A</span>Very active — consistent publishing across multiple channels</button>
+        <button class="option" onclick="selectOption(this, 10, 3)"><span class="option-letter">B</span>Somewhat active — regular but not frequent</button>
+        <button class="option" onclick="selectOption(this, 10, 2)"><span class="option-letter">C</span>Sporadic — we post when we remember</button>
+        <button class="option" onclick="selectOption(this, 10, 1)"><span class="option-letter">D</span>Essentially inactive</button>
+      </div>
+    </div>
+
+    <!-- Q11 -->
+    <div class="question-block" id="q11">
+      <div class="q-number">11 / CONVERSION</div>
+      <div class="q-text">When someone lands on your website, what percentage do you estimate actually take action?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 11, 4)"><span class="option-letter">A</span>5%+ — we have solid conversion rates</button>
+        <button class="option" onclick="selectOption(this, 11, 3)"><span class="option-letter">B</span>2–4% — average for our industry</button>
+        <button class="option" onclick="selectOption(this, 11, 2)"><span class="option-letter">C</span>Under 2% — lots of visitors, few buyers</button>
+        <button class="option" onclick="selectOption(this, 11, 1)"><span class="option-letter">D</span>No idea — we don't track it</button>
+      </div>
+    </div>
+
+    <!-- Q12 -->
+    <div class="question-block" id="q12">
+      <div class="q-number">12 / CONVERSION</div>
+      <div class="q-text">How clear is your primary call-to-action on your main page?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 12, 4)"><span class="option-letter">A</span>One clear, compelling CTA — impossible to miss</button>
+        <button class="option" onclick="selectOption(this, 12, 3)"><span class="option-letter">B</span>A main CTA but also competing options</button>
+        <button class="option" onclick="selectOption(this, 12, 2)"><span class="option-letter">C</span>Multiple CTAs that may confuse visitors</button>
+        <button class="option" onclick="selectOption(this, 12, 1)"><span class="option-letter">D</span>No clear CTA — visitors have to figure out what to do</button>
+      </div>
+    </div>
+
+    <!-- Q13 -->
+    <div class="question-block" id="q13">
+      <div class="q-number">13 / LONGEVITY</div>
+      <div class="q-text">Has your brand identity changed significantly in the last 3 years?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 13, 4)"><span class="option-letter">A</span>No — it's evolved naturally but stayed consistent</button>
+        <button class="option" onclick="selectOption(this, 13, 3)"><span class="option-letter">B</span>Minor updates — mostly refinements</button>
+        <button class="option" onclick="selectOption(this, 13, 2)"><span class="option-letter">C</span>Multiple changes — we've pivoted a few times</button>
+        <button class="option" onclick="selectOption(this, 13, 1)"><span class="option-letter">D</span>We've rebranded completely at least once</button>
+      </div>
+    </div>
+
+    <!-- Q14 -->
+    <div class="question-block" id="q14">
+      <div class="q-number">14 / LONGEVITY</div>
+      <div class="q-text">If you disappeared tomorrow, would customers notice and miss you specifically — or just find an alternative?</div>
+      <div class="options">
+        <button class="option" onclick="selectOption(this, 14, 4)"><span class="option-letter">A</span>They'd genuinely miss us — we have a unique role</button>
+        <button class="option" onclick="selectOption(this, 14, 3)"><span class="option-letter">B</span>Some would — we have loyal regulars</button>
+        <button class="option" onclick="selectOption(this, 14, 2)"><span class="option-letter">C</span>Probably not — we're interchangeable</button>
+        <button class="option" onclick="selectOption(this, 14, 1)"><span class="option-letter">D</span>They'd move on immediately</button>
+      </div>
+    </div>
+
+    <!-- Q15 — Info capture -->
+    <div class="question-block" id="q15">
+      <div class="q-number">15 / FINAL STEP</div>
+      <div class="q-text">Almost there. Where should we send your 12-page BrandPulse report?</div>
+      <input type="text" class="input-field" id="businessName" placeholder="Business name" />
+      <input type="email" class="input-field" id="emailInput" placeholder="Email address" />
+      <input type="text" class="input-field" id="industryInput" placeholder="Your industry (e.g. consulting, e-commerce, coaching)" />
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="question-block" id="qPayment">
+      <div class="q-number">PAYMENT</div>
+      <div class="q-text">Your audit is ready to generate. Unlock your full 12-page BrandPulse report.</div>
+      <div class="payment-block">
+        <div class="payment-summary">
+          <div class="payment-row"><span>BrandPulse Full Audit</span><span>$47.00</span></div>
+          <div class="payment-row"><span>12-page PDF report</span><span>included</span></div>
+          <div class="payment-row"><span>6-dimension scoring</span><span>included</span></div>
+          <div class="payment-row"><span>Priority fix roadmap</span><span>included</span></div>
+          <div class="payment-total"><span>Total</span><span>$47.00</span></div>
+        </div>
+        <button class="stripe-btn" onclick="handlePayment()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          Pay $47 — Get My Report
+        </button>
+        <div class="secure-note">🔒 SECURED BY STRIPE · INSTANT DELIVERY · NO SUBSCRIPTION</div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" id="backBtn" onclick="prevQuestion()" style="display:none">← Back</button>
+      <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Continue →</button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="results-section" id="resultsSection">
+    <div class="results-header">
+      <div class="hero-label">BrandPulse Report</div>
+      <h2 class="form-heading" id="resultsBusinessName">Your Brand</h2>
+      <div class="score-hero">
+        <div class="score-number" id="totalScore">--<span>/100</span></div>
+        <div class="score-label">
+          <div class="score-label-main" id="scoreLabel">Calculating...</div>
+          <div class="score-label-sub" id="scoreDesc">Full analysis below</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dimension-scores" id="dimScores"></div>
+
+    <div class="recommendations">
+      <h3 class="rec-heading">Your Priority Fix Roadmap</h3>
+      <div id="recList"></div>
+    </div>
+
+    <div class="download-cta">
+      <h3>Get Your Full 12-Page PDF Report</h3>
+      <p>Includes detailed scoring breakdowns, benchmark comparisons, and step-by-step action plans for each dimension.</p>
+      <div class="email-capture">
+        <input type="email" id="downloadEmail" placeholder="Enter your email to receive the full PDF" />
+        <button onclick="sendReport()">Send Report →</button>
+      </div>
+      <p style="font-size:0.75rem; color:rgba(245,240,232,0.4); font-family: 'DM Mono', monospace; letter-spacing:0.05em;">DELIVERED INSTANTLY · NO SPAM · UNSUBSCRIBE ANYTIME</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 BRANDPULSE</span>
+    <span>POWERED BY AI · BUILT ON STRIPE</span>
+  </footer>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="logo" style="font-size:2rem">Brand<span style="color:var(--gold)">Pulse</span></div>
+  <div class="spinner"></div>
+  <div class="loading-text">Analyzing your brand...</div>
+  <div class="loading-steps" id="loadingStep">Scoring clarity dimensions...</div>
+</div>
+
+<script>
+  let currentQ = 1;
+  const totalQ = 15;
+  const scores = {};
+
+  function startAudit() {
+    document.getElementById('heroSection').style.display = 'none';
+    document.getElementById('formSection').classList.remove('hidden');
+    updateProgress();
+  }
+
+  function selectOption(el, qNum, score) {
+    document.querySelectorAll(`#q${qNum} .option`).forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    scores[qNum] = score;
+    document.getElementById('nextBtn').disabled = false;
+  }
+
+  function updateProgress() {
+    const pct = ((currentQ - 1) / totalQ) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    if (currentQ <= totalQ) {
+      document.getElementById('progressLabel').textContent = `Question ${currentQ} of ${totalQ}`;
+    } else if (currentQ === 16) {
+      document.getElementById('progressLabel').textContent = 'Payment';
+    }
+  }
+
+  function nextQuestion() {
+    if (currentQ === 14) {
+      // Validate Q15 inputs on next click after q14
+    }
+    if (currentQ < 15) {
+      document.getElementById(`q${currentQ}`).classList.remove('active');
+      currentQ++;
+      document.getElementById(`q${currentQ}`).classList.add('active');
+      document.getElementById('nextBtn').disabled = (currentQ < 15);
+      document.getElementById('backBtn').style.display = 'block';
+      if (currentQ === 15) {
+        document.getElementById('nextBtn').textContent = 'Proceed to Payment →';
+        document.getElementById('nextBtn').disabled = false;
+      }
+      updateProgress();
+    } else if (currentQ === 15) {
+      const email = document.getElementById('emailInput').value;
+      const biz = document.getElementById('businessName').value;
+      if (!email || !biz) {
+        alert('Please enter your business name and email to continue.');
+        return;
+      }
+      document.getElementById('q15').classList.remove('active');
+      document.getElementById('qPayment').classList.add('active');
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('backBtn').style.display = 'block';
+      currentQ = 16;
+      updateProgress();
+    }
+  }
+
+  function prevQuestion() {
+    if (currentQ === 16) {
+      document.getElementById('qPayment').classList.remove('active');
+      currentQ = 15;
+      document.getElementById(`q${currentQ}`).classList.add('active');
+      document.getElementById('nextBtn').style.display = 'flex';
+      document.getElementById('nextBtn').textContent = 'Proceed to Payment →';
+      document.getElementById('nextBtn').disabled = false;
+    } else if (currentQ > 1) {
+      document.getElementById(`q${currentQ}`).classList.remove('active');
+      currentQ--;
+      document.getElementById(`q${currentQ}`).classList.add('active');
+      if (currentQ === 1) document.getElementById('backBtn').style.display = 'none';
+      document.getElementById('nextBtn').style.display = 'flex';
+      document.getElementById('nextBtn').textContent = 'Continue →';
+      document.getElementById('nextBtn').disabled = !scores[currentQ];
+    }
+    updateProgress();
+  }
+
+  function handlePayment() {
+    // In production: replace with Stripe Payment Link or Stripe.js checkout
+    // window.location.href = 'https://buy.stripe.com/YOUR_PAYMENT_LINK';
+    // For demo: simulate payment success
+    document.getElementById('loadingOverlay').classList.add('visible');
+    const steps = [
+      'Scoring clarity dimensions...',
+      'Analyzing trust signals...',
+      'Measuring emotional resonance...',
+      'Evaluating market positioning...',
+      'Assessing visibility metrics...',
+      'Calculating conversion strength...',
+      'Generating your scorecard...',
+      'Preparing your PDF report...'
+    ];
+    let i = 0;
+    const interval = setInterval(() => {
+      document.getElementById('loadingStep').textContent = steps[i % steps.length];
+      i++;
+      if (i >= steps.length) {
+        clearInterval(interval);
+        setTimeout(showResults, 800);
+      }
+    }, 700);
+  }
+
+  function showResults() {
+    document.getElementById('loadingOverlay').classList.remove('visible');
+    document.getElementById('formSection').classList.add('hidden');
+    document.getElementById('resultsSection').classList.add('visible');
+
+    const biz = document.getElementById('businessName').value || 'Your Brand';
+    document.getElementById('resultsBusinessName').textContent = biz;
+    document.getElementById('downloadEmail').value = document.getElementById('emailInput').value;
+
+    // Calculate scores by dimension
+    const dims = {
+      'Clarity': [scores[1]||2, scores[2]||2],
+      'Trust': [scores[3]||2, scores[4]||2],
+      'Emotion': [scores[5]||2, scores[6]||2],
+      'Positioning': [scores[7]||2, scores[8]||2],
+      'Visibility': [scores[9]||2, scores[10]||2],
+      'Conversion': [scores[11]||2, scores[12]||2]
+    };
+
+    let totalRaw = 0;
+    let dimHTML = '';
+    const dimScoresArr = [];
+
+    for (const [dim, vals] of Object.entries(dims)) {
+      const avg = (vals[0] + vals[1]) / 2;
+      const pct = Math.round((avg / 4) * 100);
+      totalRaw += avg;
+      dimScoresArr.push({ dim, pct });
+      dimHTML += `
+        <div class="dim-score">
+          <div class="dim-score-label">${dim}</div>
+          <div class="dim-score-bar"><div class="dim-score-fill" style="width:${pct}%" id="bar_${dim}"></div></div>
+          <div class="dim-score-num">${pct}</div>
+        </div>`;
+    }
+
+    const totalScore = Math.round((totalRaw / 24) * 100);
+    document.getElementById('totalScore').innerHTML = `${totalScore}<span>/100</span>`;
+    document.getElementById('dimScores').innerHTML = dimHTML;
+
+    let label, desc;
+    if (totalScore >= 80) { label = 'Brand Strength: Strong'; desc = 'Your brand is well-built. Focus on amplification.'; }
+    else if (totalScore >= 60) { label = 'Brand Strength: Developing'; desc = 'Solid foundation with clear gaps to close.'; }
+    else if (totalScore >= 40) { label = 'Brand Strength: Fragile'; desc = 'Multiple weak points are limiting your growth.'; }
+    else { label = 'Brand Strength: Critical'; desc = 'Urgent action needed across most dimensions.'; }
+
+    document.getElementById('scoreLabel').textContent = label;
+    document.getElementById('scoreDesc').textContent = desc;
+
+    setTimeout(() => {
+      document.querySelectorAll('.dim-score-fill').forEach(el => el.classList.add('animate'));
+    }, 300);
+
+    // Generate recommendations
+    const sorted = dimScoresArr.sort((a, b) => a.pct - b.pct);
+    const recs = {
+      'Clarity': { h: 'Sharpen your homepage message', p: 'Your homepage should pass the 5-second test. Add a single headline that names exactly who you help and what outcome they get. Remove all jargon.' },
+      'Trust': { h: 'Add social proof above the fold', p: 'Move your strongest testimonial or a trust metric (clients served, years in business, results achieved) to the very top of your site. Trust is won in the first 10 seconds.' },
+      'Emotion': { h: 'Define your brand feeling deliberately', p: 'Choose one emotion you want customers to feel and reverse-engineer every visual, copy, and UX decision to produce that feeling. Right now it\'s likely inconsistent.' },
+      'Positioning': { h: 'Narrow your target customer', p: 'The more specific your target, the more magnetic your brand. "Business owners" is not a target. "Freelance designers earning $50K–$150K who want to raise rates" is.' },
+      'Visibility': { h: 'Build one organic discovery channel', p: 'Choose one: SEO content, LinkedIn authority, or YouTube. Commit 90 days to that channel only. Scattered presence creates zero visibility.' },
+      'Conversion': { h: 'Remove all CTAs except one', p: 'Your main page likely has 3–6 things visitors could do. Pick the single most important action and make everything else secondary or removed. Confusion kills conversion.' }
+    };
+
+    let recHTML = '';
+    sorted.forEach((d, i) => {
+      const priority = i < 2 ? 'high' : i < 4 ? 'medium' : 'low';
+      const priorityLabel = i < 2 ? 'HIGH' : i < 4 ? 'MEDIUM' : 'LOW';
+      const rec = recs[d.dim];
+      recHTML += `
+        <div class="rec-item">
+          <div class="rec-priority ${priority}">${priorityLabel}</div>
+          <div class="rec-content">
+            <h4>${rec.h} — ${d.dim} score: ${d.pct}/100</h4>
+            <p>${rec.p}</p>
+          </div>
+        </div>`;
+    });
+    document.getElementById('recList').innerHTML = recHTML;
+  }
+
+  function sendReport() {
+    const email = document.getElementById('downloadEmail').value;
+    if (!email) { alert('Please enter your email address.'); return; }
+    // In production: trigger your email automation (Systeme.io / Gmail API)
+    alert(`✓ Your full 12-page BrandPulse report is being sent to ${email}. Check your inbox within 60 seconds.`);
+  }
+</script>
+</body>
+</html>
