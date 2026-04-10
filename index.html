@@ -1142,9 +1142,10 @@
   }
 
   function handlePayment() {
-    // Stripe Payment Link - LIVE
-    window.location.href = 'https://buy.stripe.com/6oU9AT51T6er92X6yC6sw00?utm_source=brandpulse&utm_medium=web&utm_campaign=brand_audit&utm_content=pay_button';
-    
+    // Open Stripe checkout in a NEW TAB — keeps the app running on this page
+    window.open('https://buy.stripe.com/6oU9AT51T6er92X6yC6sw00?utm_source=brandpulse&utm_medium=web&utm_campaign=brand_audit&utm_content=pay_button', '_blank');
+
+    // Show loading overlay and generate results on this page immediately
     document.getElementById('loadingOverlay').classList.add('visible');
     const steps = [
       'Scoring clarity dimensions...',
