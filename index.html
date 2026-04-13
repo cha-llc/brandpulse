@@ -1072,30 +1072,30 @@
   // ── ON PAGE LOAD: Restore session after Stripe redirect ──
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('paid') === 'true') {
-      const token = params.get('session');
-      window.history.replaceState({}, '', window.location.pathname);
-      if (token) {
-        try {
-          const res = await fetch(
-            'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(token) + '&select=email,business_name,scores',
-            { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' } }
-          );
-          const rows = await res.json();
-          if (rows && rows.length > 0) {
-            const row = rows[0];
-            if (row.scores) Object.assign(scores, row.scores);
-            if (row.email) document.getElementById('emailInput') && (document.getElementById('emailInput').value = row.email);
-            if (row.email) document.getElementById('downloadEmail') && (document.getElementById('downloadEmail').value = row.email);
-            if (row.business_name) document.getElementById('businessName') && (document.getElementById('businessName').value = row.business_name);
-            await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(token),
-              { method: 'PATCH', headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ paid: true }) }
-            );
-            runBrandPulseLoading();
-          }
-        } catch(e) { console.error('Session restore failed:', e); }
+    if (params.get('paid') !== 'true') return;
+    window.history.replaceState({}, '', window.location.pathname);
+    try {
+      // Fetch most recent unpaid session — matches Flagged's working approach
+      const res = await fetch(
+        'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?paid=eq.false&order=created_at.desc&limit=1&select=id,session_token,email,business_name,scores',
+        { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' } }
+      );
+      const rows = await res.json();
+      if (!rows || rows.length === 0) { console.error('No pending BrandPulse session found'); return; }
+      const row = rows[0];
+      if (row.scores) Object.assign(scores, row.scores);
+      const email = row.email || '';
+      if (email) {
+        document.getElementById('emailInput') && (document.getElementById('emailInput').value = email);
+        document.getElementById('downloadEmail') && (document.getElementById('downloadEmail').value = email);
       }
-    }
+      if (row.business_name) document.getElementById('businessName') && (document.getElementById('businessName').value = row.business_name);
+      // Mark paid
+      await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(row.session_token),
+        { method: 'PATCH', headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ paid: true }) }
+      );
+      runBrandPulseLoading();
+    } catch(e) { console.error('BrandPulse session restore failed:', e); }
   });
 
   function runBrandPulseLoading() {
