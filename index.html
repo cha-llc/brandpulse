@@ -1042,7 +1042,8 @@
       <p>Includes detailed scoring breakdowns, benchmark comparisons, and step-by-step action plans for each dimension.</p>
       <div class="email-capture">
         <input type="email" id="downloadEmail" placeholder="Enter your email to receive the full PDF" />
-        <button onclick="sendReport()">Send Report →</button>
+        <button class="btn-download" onclick="sendReport()">Send Report →</button>
+          <div id="bpSendConfirm" style="display:none;margin-top:10px;font-size:0.8rem;color:#c9a84c;letter-spacing:0.05em;">✓ Report sent — check your inbox within 60 seconds.</div>
       </div>
       <p style="font-size:0.75rem; color:rgba(245,240,232,0.4); font-family: 'DM Mono', monospace; letter-spacing:0.05em;">DELIVERED INSTANTLY · NO SPAM · UNSUBSCRIBE ANYTIME</p>
     </div>
@@ -1177,6 +1178,12 @@
     document.getElementById('resultsBusinessName').textContent = biz;
     document.getElementById('downloadEmail').value = document.getElementById('emailInput').value;
 
+    // Auto-send report immediately when results render
+    setTimeout(() => {
+      const email = document.getElementById('emailInput')?.value || document.getElementById('downloadEmail')?.value;
+      if (email) autoSendBrandPulse(email);
+    }, 1500);
+
     // Calculate scores by dimension
     const dims = {
       'Clarity': [scores[1]||2, scores[2]||2],
@@ -1249,11 +1256,89 @@
     document.getElementById('recList').innerHTML = recHTML;
   }
 
-  function sendReport() {
+  async function sendReport() {
     const email = document.getElementById('downloadEmail').value;
     if (!email) { alert('Please enter your email address.'); return; }
-    // In production: trigger your email automation (Systeme.io / Gmail API)
-    alert(`✓ Your full 12-page BrandPulse report is being sent to ${email}. Check your inbox within 60 seconds.`);
+    const btn = document.querySelector('.btn-download');
+    if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
+    try {
+      const html = buildBrandPulseEmail();
+      const res = await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/send-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: email, subject: 'Your BrandPulse Report — Brand Audit Complete', html })
+      });
+      if (res.ok) {
+        if (btn) { btn.textContent = 'Report Sent ✓'; btn.style.background = '#1a6b4a'; }
+        const conf = document.getElementById('bpSendConfirm');
+        if (conf) conf.style.display = 'block';
+      } else { throw new Error('failed'); }
+    } catch(e) {
+      if (btn) { btn.textContent = 'Send Report'; btn.disabled = false; }
+      alert('There was an issue sending your report. Please email cs@cjhadisa.com and we will send it manually within 1 hour.');
+    }
+  }
+
+  function buildBrandPulseEmail() {
+    const biz = document.getElementById('businessName')?.value || 'Your Brand';
+    const totalScore = document.getElementById('totalScore')?.textContent?.replace('/100','').trim() || '--';
+    const scoreLabel = document.getElementById('scoreLabel')?.textContent || '';
+    const scoreDesc = document.getElementById('scoreDesc')?.textContent || '';
+    let dimRows = '';
+    document.querySelectorAll('.dim-score').forEach(d => {
+      const label = d.querySelector('.dim-score-label')?.textContent || '';
+      const num = d.querySelector('.dim-score-num')?.textContent || '';
+      const fill = d.querySelector('.dim-score-fill');
+      const width = fill ? fill.style.width : '0%';
+      dimRows += `<tr><td style="padding:10px 12px;font-size:13px;font-weight:600;color:#1A1A2E;border-bottom:1px solid #f0ece4;width:140px;">${label}</td><td style="padding:10px 12px;border-bottom:1px solid #f0ece4;"><div style="background:#e8e4dc;height:6px;border-radius:3px;"><div style="background:#c9a84c;height:6px;border-radius:3px;width:${width};"></div></div></td><td style="padding:10px 12px;font-size:13px;color:#c9a84c;font-weight:700;border-bottom:1px solid #f0ece4;width:50px;">${num}/100</td></tr>`;
+    });
+    let recRows = '';
+    document.querySelectorAll('.rec-item').forEach(r => {
+      const pri = r.querySelector('.rec-priority')?.textContent || '';
+      const title = r.querySelector('.rec-content h4')?.textContent || '';
+      const desc = r.querySelector('.rec-content p')?.textContent || '';
+      const bg = pri.includes('HIGH') ? '#C1121F' : pri.includes('MEDIUM') ? '#c9a84c' : '#2A9D8F';
+      recRows += `<tr><td style="padding:16px;border-bottom:1px solid #f0ece4;vertical-align:top;width:80px;"><span style="background:${bg};color:white;font-size:10px;font-weight:700;padding:3px 8px;letter-spacing:0.1em;">${pri}</span></td><td style="padding:16px;border-bottom:1px solid #f0ece4;"><p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#1A1A2E;">${title}</p><p style="margin:0;font-size:12px;color:#6b6458;line-height:1.7;">${desc}</p></td></tr>`;
+    });
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f0ece4;font-family:Georgia,serif;">
+<div style="max-width:600px;margin:0 auto;background:#fff;">
+<div style="background:#0d0d0d;padding:32px 40px;text-align:center;">
+  <div style="font-size:26px;font-weight:900;color:#f5f0e8;letter-spacing:-0.03em;">Brand<span style="color:#c9a84c;">Pulse</span></div>
+  <div style="font-size:10px;letter-spacing:0.25em;color:rgba(245,240,232,0.35);text-transform:uppercase;margin-top:6px;">Brand Intelligence Report · C.H.A. LLC</div>
+</div>
+<div style="background:#c9a84c;padding:36px 40px;text-align:center;">
+  <div style="font-size:11px;letter-spacing:0.2em;color:rgba(13,13,13,0.6);text-transform:uppercase;margin-bottom:10px;">Overall Brand Score</div>
+  <div style="font-size:80px;font-weight:900;color:#0d0d0d;line-height:1;font-family:Georgia,serif;">${totalScore}<span style="font-size:24px;">/100</span></div>
+  <div style="font-size:18px;color:#0d0d0d;margin-top:8px;font-style:italic;">${scoreLabel}</div>
+  <div style="font-size:13px;color:rgba(13,13,13,0.6);margin-top:6px;">${scoreDesc}</div>
+</div>
+<div style="padding:32px 40px;">
+  <h2 style="font-size:16px;color:#0d0d0d;margin:0 0 6px;font-family:Arial,sans-serif;">Brand: ${biz}</h2>
+  <p style="font-size:13px;color:#6b6458;margin:0 0 24px;">Dimension scores across all 6 audit areas.</p>
+  <table style="width:100%;border-collapse:collapse;">${dimRows}</table>
+</div>
+<div style="padding:0 40px 32px;">
+  <h2 style="font-size:16px;color:#0d0d0d;margin:0 0 6px;font-family:Arial,sans-serif;">Priority Fix Roadmap</h2>
+  <p style="font-size:13px;color:#6b6458;margin:0 0 20px;">Your lowest-scoring dimensions ranked by urgency.</p>
+  <table style="width:100%;border-collapse:collapse;">${recRows}</table>
+</div>
+<div style="background:#0d0d0d;padding:24px 40px;text-align:center;">
+  <p style="margin:0;font-size:11px;color:rgba(245,240,232,0.3);letter-spacing:0.08em;">BRANDPULSE · GETBRANDPULSE.VERCEL.APP · C.H.A. LLC</p>
+  <p style="margin:8px 0 0;font-size:11px;color:rgba(245,240,232,0.2);">Questions? cs@cjhadisa.com</p>
+</div>
+</div></body></html>`;
+  }
+
+  async function autoSendBrandPulse(email) {
+    if (!email) return;
+    try {
+      const html = buildBrandPulseEmail();
+      await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/send-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: email, subject: 'Your BrandPulse Report — Brand Audit Complete', html })
+      });
+    } catch(e) { console.error('Auto-send failed:', e); }
   }
 </script>
 </body>
