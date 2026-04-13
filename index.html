@@ -1079,7 +1079,7 @@
         try {
           const res = await fetch(
             'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(token) + '&select=email,business_name,scores',
-            { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjAzMTksImV4cCI6MjA5MTQ5NjMxOX0.GJpnEXnyQM_-_GJAuaLjXqsRJeXFo6j7p3MupgPEBLQ' } }
+            { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' } }
           );
           const rows = await res.json();
           if (rows && rows.length > 0) {
@@ -1089,7 +1089,7 @@
             if (row.email) document.getElementById('downloadEmail') && (document.getElementById('downloadEmail').value = row.email);
             if (row.business_name) document.getElementById('businessName') && (document.getElementById('businessName').value = row.business_name);
             await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(token),
-              { method: 'PATCH', headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjAzMTksImV4cCI6MjA5MTQ5NjMxOX0.GJpnEXnyQM_-_GJAuaLjXqsRJeXFo6j7p3MupgPEBLQ', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ paid: true }) }
+              { method: 'PATCH', headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ paid: true }) }
             );
             runBrandPulseLoading();
           }
@@ -1195,7 +1195,7 @@
     try {
       await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions', {
         method: 'POST',
-        headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjAzMTksImV4cCI6MjA5MTQ5NjMxOX0.GJpnEXnyQM_-_GJAuaLjXqsRJeXFo6j7p3MupgPEBLQ', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify({ session_token: token, email, business_name: biz, scores })
       });
     } catch(e) { console.error('Session save failed:', e); }
