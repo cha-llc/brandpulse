@@ -1018,6 +1018,7 @@
 
   <!-- RESULTS -->
   <section class="results-section" id="resultsSection">
+    <div id="bpEmailConfirm" style="display:none;padding:12px 20px;margin-bottom:20px;font-size:0.82rem;letter-spacing:0.03em;font-family:'DM Mono',monospace;border:1px solid;"></div>
     <div class="results-header">
       <div class="hero-label">BrandPulse Report</div>
       <h2 class="form-heading" id="resultsBusinessName">Your Brand</h2>
@@ -1067,6 +1068,48 @@
   let currentQ = 1;
   const totalQ = 15;
   const scores = {};
+
+  // ── ON PAGE LOAD: Restore session after Stripe redirect ──
+  window.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('paid') === 'true') {
+      const token = params.get('session');
+      window.history.replaceState({}, '', window.location.pathname);
+      if (token) {
+        try {
+          const res = await fetch(
+            'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(token) + '&select=email,business_name,scores',
+            { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjAzMTksImV4cCI6MjA5MTQ5NjMxOX0.GJpnEXnyQM_-_GJAuaLjXqsRJeXFo6j7p3MupgPEBLQ' } }
+          );
+          const rows = await res.json();
+          if (rows && rows.length > 0) {
+            const row = rows[0];
+            if (row.scores) Object.assign(scores, row.scores);
+            if (row.email) document.getElementById('emailInput') && (document.getElementById('emailInput').value = row.email);
+            if (row.email) document.getElementById('downloadEmail') && (document.getElementById('downloadEmail').value = row.email);
+            if (row.business_name) document.getElementById('businessName') && (document.getElementById('businessName').value = row.business_name);
+            await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(token),
+              { method: 'PATCH', headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjAzMTksImV4cCI6MjA5MTQ5NjMxOX0.GJpnEXnyQM_-_GJAuaLjXqsRJeXFo6j7p3MupgPEBLQ', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ paid: true }) }
+            );
+            runBrandPulseLoading();
+          }
+        } catch(e) { console.error('Session restore failed:', e); }
+      }
+    }
+  });
+
+  function runBrandPulseLoading() {
+    document.getElementById('heroSection').style.display = 'none';
+    document.getElementById('formSection').classList.add('hidden');
+    document.getElementById('loadingOverlay').classList.add('visible');
+    const steps = ['Scoring clarity dimensions...','Analyzing trust signals...','Measuring emotional resonance...','Evaluating market positioning...','Assessing visibility metrics...','Calculating conversion strength...','Generating your scorecard...','Preparing your PDF report...'];
+    let i = 0;
+    const iv = setInterval(() => {
+      document.getElementById('loadingStep').textContent = steps[i % steps.length];
+      i++;
+      if (i >= steps.length) { clearInterval(iv); setTimeout(showResults, 800); }
+    }, 700);
+  }
 
   function startAudit() {
     document.getElementById('heroSection').style.display = 'none';
@@ -1142,31 +1185,22 @@
     updateProgress();
   }
 
-  function handlePayment() {
-    // Open Stripe checkout in a NEW TAB — keeps the app running on this page
-    window.open('https://buy.stripe.com/6oU9AT51T6er92X6yC6sw00?utm_source=brandpulse&utm_medium=web&utm_campaign=brand_audit&utm_content=pay_button', '_blank');
+  async function handlePayment() {
+    const email = document.getElementById('emailInput').value;
+    const biz = document.getElementById('businessName').value;
+    if (!email || !biz) { alert('Please enter your business name and email to continue.'); return; }
 
-    // Show loading overlay and generate results on this page immediately
-    document.getElementById('loadingOverlay').classList.add('visible');
-    const steps = [
-      'Scoring clarity dimensions...',
-      'Analyzing trust signals...',
-      'Measuring emotional resonance...',
-      'Evaluating market positioning...',
-      'Assessing visibility metrics...',
-      'Calculating conversion strength...',
-      'Generating your scorecard...',
-      'Preparing your PDF report...'
-    ];
-    let i = 0;
-    const interval = setInterval(() => {
-      document.getElementById('loadingStep').textContent = steps[i % steps.length];
-      i++;
-      if (i >= steps.length) {
-        clearInterval(interval);
-        setTimeout(showResults, 800);
-      }
-    }, 700);
+    const token = crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).substr(2));
+
+    try {
+      await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions', {
+        method: 'POST',
+        headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjAzMTksImV4cCI6MjA5MTQ5NjMxOX0.GJpnEXnyQM_-_GJAuaLjXqsRJeXFo6j7p3MupgPEBLQ', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ session_token: token, email, business_name: biz, scores })
+      });
+    } catch(e) { console.error('Session save failed:', e); }
+
+    window.location.href = 'https://buy.stripe.com/6oU9AT51T6er92X6yC6sw00?utm_source=brandpulse&utm_medium=web&utm_campaign=brand_audit&utm_content=pay_button&client_reference_id=' + encodeURIComponent(token);
   }
 
   function showResults() {
@@ -1178,11 +1212,23 @@
     document.getElementById('resultsBusinessName').textContent = biz;
     document.getElementById('downloadEmail').value = document.getElementById('emailInput').value;
 
-    // Auto-send report immediately when results render
-    setTimeout(() => {
-      const email = document.getElementById('emailInput')?.value || document.getElementById('downloadEmail')?.value;
-      if (email) autoSendBrandPulse(email);
-    }, 1500);
+    // Auto-send fires 3500ms AFTER results render — ensures DOM is fully painted
+    setTimeout(async () => {
+      const email = document.getElementById('downloadEmail')?.value || document.getElementById('emailInput')?.value;
+      if (!email) return;
+      const html = buildBrandPulseEmail();
+      const res = await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/send-report', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: email, subject: 'Your BrandPulse Report — Brand Audit Complete', html })
+      });
+      const data = await res.json();
+      const confirmEl = document.getElementById('bpEmailConfirm');
+      if (confirmEl) {
+        confirmEl.textContent = data.success ? '✓ Report sent to ' + email + ' — check your inbox.' : '⚠ Email delivery failed. Use the Send button below.';
+        confirmEl.style.color = data.success ? '#1a6b4a' : '#C1121F';
+        confirmEl.style.display = 'block';
+      }
+    }, 3500);
 
     // Calculate scores by dimension
     const dims = {
@@ -1329,17 +1375,7 @@
 </div></body></html>`;
   }
 
-  async function autoSendBrandPulse(email) {
-    if (!email) return;
-    try {
-      const html = buildBrandPulseEmail();
-      await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/send-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: email, subject: 'Your BrandPulse Report — Brand Audit Complete', html })
-      });
-    } catch(e) { console.error('Auto-send failed:', e); }
-  }
+
 </script>
 </body>
 </html>
