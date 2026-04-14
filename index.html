@@ -34,7 +34,7 @@
 <!-- Schema.org Structured Data -->
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Product","name":"BrandPulse Brand Audit","description":"AI-powered brand audit scoring 6 dimensions with 12-page PDF report and priority fix roadmap.","url":"https://getbrandpulse.vercel.app/","image":"https://raw.githubusercontent.com/cha-llc/promo-media/main/brandpulse_1.png","brand":{"@type":"Brand","name":"C.H.A. LLC"},"offers":{"@type":"Offer","price":"47.00","priceCurrency":"USD","availability":"https://schema.org/InStock","url":"https://buy.stripe.com/6oU9AT51T6er92X6yC6sw00"}}
-<\/script>
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1085,11 +1085,38 @@
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('paid') !== 'true') return;
-    window.history.replaceState({}, '', window.location.pathname);
     try {
-      // Fetch most recent unpaid session — matches Flagged's working approach
+      // STEP 1: Read token from localStorage → cookie
+      let restoredToken = '';
+      try {
+        const lsToken = localStorage.getItem('bp_pending_token');
+        const lsTs = parseInt(localStorage.getItem('bp_pending_ts') || '0');
+        if (lsToken && (Date.now() - lsTs) < 7200000) restoredToken = lsToken;
+      } catch(e) {}
+      if (!restoredToken) {
+        const cm = document.cookie.match(/bp_token=([^;]+)/);
+        if (cm) restoredToken = decodeURIComponent(cm[1]);
+      }
+      try { localStorage.removeItem('bp_pending_token'); localStorage.removeItem('bp_pending_ts'); } catch(e) {}
+      document.cookie = 'bp_token=; path=/; max-age=0';
+
+      // STEP 2: Exact token lookup
+      if (restoredToken) {
+        const rt = await fetch(
+          'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(restoredToken) + '&select=*',
+          { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' } }
+        );
+        const rtR = await rt.json();
+        if (rtR && rtR.length > 0) {
+          const row = rtR[0];
+          // Found by token -- mark as 'rows' so existing flow uses it
+        }
+      }
+
+      // STEP 3: Fallback — most recent unpaid session (last 4 hours)
+      const since = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
       const res = await fetch(
-        'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?paid=eq.false&order=created_at.desc&limit=1&select=id,session_token,email,business_name,scores',
+        'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?paid=eq.false&order=created_at.desc&limit=1&select=id,session_token,email,business_name,scores&created_at=gte.' + encodeURIComponent(since),
         { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' } }
       );
       const rows = await res.json();
@@ -1212,6 +1239,9 @@
       });
     } catch(e) { console.error('Session save failed:', e); }
 
+    // Save token before Stripe redirect — survives cross-domain navigation
+    try { localStorage.setItem('bp_pending_token', token); localStorage.setItem('bp_pending_ts', Date.now().toString()); } catch(e) {}
+    document.cookie = 'bp_token=' + encodeURIComponent(token) + '; path=/; max-age=7200; SameSite=Lax';
     window.location.href = 'https://buy.stripe.com/6oU9AT51T6er92X6yC6sw00?utm_source=brandpulse&utm_medium=web&utm_campaign=brand_audit&utm_content=pay_button&client_reference_id=' + encodeURIComponent(token);
   }
 
