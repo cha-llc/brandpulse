@@ -776,13 +776,13 @@
   .form-section.hidden { display: none; }
 </style>
 <script type="text/javascript">function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:"en",includedLanguages:"",layout:google.translate.TranslateElement.InlineLayout.SIMPLE,autoDisplay:false},"google_translate_element")}
-  // ── INTERNAL ERROR REPORTING — sends to #technical-alerts + cs@cjhadisa.com ──
+  // ── INTERNAL ERROR REPORTING — Slack #technical-alerts + appdevv2026@gmail.com ──
   async function reportInternalError(product, stage, errorMsg, customerEmail) {
     try {
       await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/internal-alert', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' },
-        body: JSON.stringify({ type: 'error', product, stage, error: errorMsg, customerEmail: customerEmail || '' })
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' },
+        body: JSON.stringify({ type: 'error', product, stage, error: errorMsg, customerEmail: customerEmail || '', devEmail: 'appdevv2026@gmail.com' })
       });
     } catch(e) { console.error('Alert failed silently:', e); }
   }
@@ -1104,6 +1104,7 @@
 
       const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs';
       const SUPA_BASE = 'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions';
+      const ALERT_URL = 'https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/internal-alert';
 
       function restoreSessionRow(row) {
         if (row.scores) Object.assign(scores, row.scores);
@@ -1115,10 +1116,24 @@
         if (row.business_name) document.getElementById('businessName') && (document.getElementById('businessName').value = row.business_name);
       }
 
-      async function markPaidAndRun(sessionToken) {
+      // Notify Slack #newsletter with paid customer email — fires on every confirmed payment
+      async function notifyNewsletter(customerEmail, businessName) {
+        if (!customerEmail) return;
+        try {
+          await fetch(ALERT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPA_KEY },
+            body: JSON.stringify({ type: 'newsletter', product: 'BrandPulse', customerEmail, businessName: businessName || '' })
+          });
+        } catch(e) { console.error('Newsletter notify failed silently:', e); }
+      }
+
+      async function markPaidAndRun(sessionToken, customerEmail, businessName) {
         await fetch(SUPA_BASE + '?session_token=eq.' + encodeURIComponent(sessionToken),
           { method: 'PATCH', headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ paid: true }) }
         );
+        // Fire-and-forget: notify Slack #newsletter with paid customer details
+        notifyNewsletter(customerEmail, businessName);
         runBrandPulseLoading();
       }
 
@@ -1132,7 +1147,7 @@
         if (rtR && rtR.length > 0) {
           const row = rtR[0];
           restoreSessionRow(row);
-          await markPaidAndRun(row.session_token);
+          await markPaidAndRun(row.session_token, row.email, row.business_name);
           return;
         }
       }
@@ -1147,7 +1162,7 @@
       if (!rows || rows.length === 0) { console.error('No recent BrandPulse session found'); reportInternalError('BrandPulse', 'session_restore', 'No session found on paid=true return', ''); return; }
       const row = rows[0];
       restoreSessionRow(row);
-      await markPaidAndRun(row.session_token);
+      await markPaidAndRun(row.session_token, row.email, row.business_name);
     } catch(e) { console.error('BrandPulse session restore failed:', e); reportInternalError('BrandPulse', 'session_restore', e.message, ''); }
   });
 
@@ -1254,7 +1269,10 @@
         headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify({ session_token: token, email, business_name: biz, industry, scores })
       });
-    } catch(e) { console.error('Session save failed:', e); }
+    } catch(e) {
+      console.error('Session save failed:', e);
+      reportInternalError('BrandPulse', 'session_save', e.message, email);
+    }
 
     // Save token before Stripe redirect — survives cross-domain navigation
     try { localStorage.setItem('bp_pending_token', token); localStorage.setItem('bp_pending_ts', Date.now().toString()); } catch(e) {}
@@ -1269,25 +1287,36 @@
 
     const biz = document.getElementById('businessName').value || 'Your Brand';
     document.getElementById('resultsBusinessName').textContent = biz;
-    document.getElementById('downloadEmail').value = document.getElementById('emailInput').value;
+    // Sync email fields: only overwrite downloadEmail if emailInput has a value
+    const _syncEmail = document.getElementById('emailInput').value;
+    if (_syncEmail) document.getElementById('downloadEmail').value = _syncEmail;
 
     // Auto-send fires 3500ms AFTER results render — ensures DOM is fully painted
     setTimeout(async () => {
       const email = document.getElementById('downloadEmail')?.value || document.getElementById('emailInput')?.value;
       if (!email) return;
-      const html = buildBrandPulseEmail();
-      const res = await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/send-report', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' },
-        body: JSON.stringify({ to: email, subject: 'Your BrandPulse Report — Brand Audit Complete', html })
-      });
-      const data = await res.json();
       const confirmEl = document.getElementById('bpEmailConfirm');
-      if (confirmEl) {
-        const emailOk = data.success;
-      confirmEl.textContent = emailOk ? '✓ Report sent to ' + email + ' — check your inbox.' : '⚠ Email delivery failed. Use the Send button below.';
-      if (!emailOk) reportInternalError('BrandPulse', 'email_auto_send', 'Auto-send returned failure', email);
-        confirmEl.style.color = data.success ? '#1a6b4a' : '#C1121F';
-        confirmEl.style.display = 'block';
+      try {
+        const html = buildBrandPulseEmail();
+        const res = await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/send-report', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' },
+          body: JSON.stringify({ to: email, subject: 'Your BrandPulse Report — Brand Audit Complete', html })
+        });
+        const data = await res.json().catch(() => ({}));
+        const emailOk = res.ok && data.success !== false;
+        if (confirmEl) {
+          confirmEl.textContent = emailOk ? '✓ Report sent to ' + email + ' — check your inbox.' : '⚠ Email delivery failed. Use the Send button below.';
+          confirmEl.style.color = emailOk ? '#1a6b4a' : '#C1121F';
+          confirmEl.style.display = 'block';
+        }
+        if (!emailOk) reportInternalError('BrandPulse', 'email_auto_send', 'send-report returned failure: ' + (data.error || res.status), email);
+      } catch(e) {
+        if (confirmEl) {
+          confirmEl.textContent = '⚠ Email delivery failed. Use the Send button below.';
+          confirmEl.style.color = '#C1121F';
+          confirmEl.style.display = 'block';
+        }
+        reportInternalError('BrandPulse', 'email_auto_send', e.message, email);
       }
     }, 3500);
 
@@ -1375,14 +1404,19 @@
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' },
         body: JSON.stringify({ to: email, subject: 'Your BrandPulse Report — Brand Audit Complete', html })
       });
-      if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const ok = res.ok && data.success !== false;
+      if (ok) {
         if (btn) { btn.textContent = 'Report Sent ✓'; btn.style.background = '#1a6b4a'; }
         const conf = document.getElementById('bpSendConfirm');
         if (conf) conf.style.display = 'block';
-      } else { throw new Error('failed'); }
+      } else {
+        throw new Error(data.error || 'send-report returned ' + res.status);
+      }
     } catch(e) {
       if (btn) { btn.textContent = 'Send Report'; btn.disabled = false; }
-      alert('There was an issue sending your report. Please email cs@cjhadisa.com and we will send it manually within 1 hour.');
+      reportInternalError('BrandPulse', 'email_manual_send', e.message, email);
+      alert('There was an issue sending your report. Our team has been notified and will send it manually within 1 hour.');
     }
   }
 
