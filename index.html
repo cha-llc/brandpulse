@@ -1100,40 +1100,52 @@
       try { localStorage.removeItem('bp_pending_token'); localStorage.removeItem('bp_pending_ts'); } catch(e) {}
       document.cookie = 'bp_token=; path=/; max-age=0';
 
-      // STEP 2: Exact token lookup
+      const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs';
+      const SUPA_BASE = 'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions';
+
+      function restoreSessionRow(row) {
+        if (row.scores) Object.assign(scores, row.scores);
+        const em = row.email || '';
+        if (em) {
+          document.getElementById('emailInput') && (document.getElementById('emailInput').value = em);
+          document.getElementById('downloadEmail') && (document.getElementById('downloadEmail').value = em);
+        }
+        if (row.business_name) document.getElementById('businessName') && (document.getElementById('businessName').value = row.business_name);
+      }
+
+      async function markPaidAndRun(sessionToken) {
+        await fetch(SUPA_BASE + '?session_token=eq.' + encodeURIComponent(sessionToken),
+          { method: 'PATCH', headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ paid: true }) }
+        );
+        runBrandPulseLoading();
+      }
+
+      // STEP 2: Exact token lookup — primary path
       if (restoredToken) {
         const rt = await fetch(
-          'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(restoredToken) + '&select=*',
-          { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' } }
+          SUPA_BASE + '?session_token=eq.' + encodeURIComponent(restoredToken) + '&select=*',
+          { headers: { 'apikey': SUPA_KEY } }
         );
         const rtR = await rt.json();
         if (rtR && rtR.length > 0) {
           const row = rtR[0];
-          // Found by token -- mark as 'rows' so existing flow uses it
+          restoreSessionRow(row);
+          await markPaidAndRun(row.session_token);
+          return;
         }
       }
 
-      // STEP 3: Fallback — most recent unpaid session (last 4 hours)
+      // STEP 3: Fallback — most recent session in last 4 hours (paid or unpaid)
       const since = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
       const res = await fetch(
-        'https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?paid=eq.false&order=created_at.desc&limit=1&select=id,session_token,email,business_name,scores&created_at=gte.' + encodeURIComponent(since),
-        { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' } }
+        SUPA_BASE + '?order=created_at.desc&limit=1&select=id,session_token,email,business_name,scores&created_at=gte.' + encodeURIComponent(since),
+        { headers: { 'apikey': SUPA_KEY } }
       );
       const rows = await res.json();
-      if (!rows || rows.length === 0) { console.error('No pending BrandPulse session found'); reportInternalError('BrandPulse', 'session_restore', 'No unpaid session found on paid=true return', ''); return; }
+      if (!rows || rows.length === 0) { console.error('No recent BrandPulse session found'); reportInternalError('BrandPulse', 'session_restore', 'No session found on paid=true return', ''); return; }
       const row = rows[0];
-      if (row.scores) Object.assign(scores, row.scores);
-      const email = row.email || '';
-      if (email) {
-        document.getElementById('emailInput') && (document.getElementById('emailInput').value = email);
-        document.getElementById('downloadEmail') && (document.getElementById('downloadEmail').value = email);
-      }
-      if (row.business_name) document.getElementById('businessName') && (document.getElementById('businessName').value = row.business_name);
-      // Mark paid
-      await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions?session_token=eq.' + encodeURIComponent(row.session_token),
-        { method: 'PATCH', headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ paid: true }) }
-      );
-      runBrandPulseLoading();
+      restoreSessionRow(row);
+      await markPaidAndRun(row.session_token);
     } catch(e) { console.error('BrandPulse session restore failed:', e); reportInternalError('BrandPulse', 'session_restore', e.message, ''); }
   });
 
