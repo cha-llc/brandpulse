@@ -1030,7 +1030,7 @@
 
   <!-- RESULTS -->
   <section class="results-section" id="resultsSection">
-    <div id="bpEmailConfirm" style="display:none;padding:12px 20px;margin-bottom:20px;font-size:0.82rem;letter-spacing:0.03em;font-family:'DM Mono',monospace;border:1px solid;"></div>
+    <div id="bpEmailConfirm" style="display:none;padding:12px 20px;margin-bottom:20px;font-size:0.82rem;letter-spacing:0.03em;font-family:'DM Mono',monospace;border:1px solid currentColor;"></div>
     <div class="results-header">
       <div class="hero-label">BrandPulse Report</div>
       <h2 class="form-heading" id="resultsBusinessName">Your Brand</h2>
@@ -1085,6 +1085,8 @@
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('paid') !== 'true') return;
+    // Remove ?paid=true immediately so a page refresh doesn't re-trigger the flow
+    window.history.replaceState({}, document.title, window.location.pathname);
     try {
       // STEP 1: Read token from localStorage → cookie
       let restoredToken = '';
@@ -1240,14 +1242,17 @@
     const email = document.getElementById('emailInput').value;
     const biz = document.getElementById('businessName').value;
     if (!email || !biz) { alert('Please enter your business name and email to continue.'); return; }
+    const payBtn = document.querySelector('.stripe-btn');
+    if (payBtn) { payBtn.disabled = true; payBtn.textContent = 'Redirecting to checkout…'; }
 
     const token = crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).substr(2));
+    const industry = document.getElementById('industryInput')?.value || '';
 
     try {
       await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/rest/v1/brandpulse_sessions', {
         method: 'POST',
         headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs', 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ session_token: token, email, business_name: biz, scores })
+        body: JSON.stringify({ session_token: token, email, business_name: biz, industry, scores })
       });
     } catch(e) { console.error('Session save failed:', e); }
 
@@ -1272,7 +1277,7 @@
       if (!email) return;
       const html = buildBrandPulseEmail();
       const res = await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/send-report', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' },
         body: JSON.stringify({ to: email, subject: 'Your BrandPulse Report — Brand Audit Complete', html })
       });
       const data = await res.json();
@@ -1367,7 +1372,7 @@
       const html = buildBrandPulseEmail();
       const res = await fetch('https://vzzzqsmqqaoilkmskadl.supabase.co/functions/v1/send-report', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6enpxc21xcWFvaWxrbXNrYWRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjYzMjQsImV4cCI6MjA5MTQ0MjMyNH0.vYkiz5BeoJlhNzcEiiGQfsHLE5UfqJbTTBjNXk1xxJs' },
         body: JSON.stringify({ to: email, subject: 'Your BrandPulse Report — Brand Audit Complete', html })
       });
       if (res.ok) {
